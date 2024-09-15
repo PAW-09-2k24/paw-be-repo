@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const handler404 = require('./middleware/404handler');
 const handler500 = require('./middleware/500handler');
