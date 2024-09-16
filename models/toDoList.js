@@ -6,8 +6,6 @@ const toDoListSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
-    
-
 });
 
 module.exports = mongoose.model('toDoList', toDoListSchema);
