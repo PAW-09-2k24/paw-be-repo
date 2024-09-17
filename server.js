@@ -22,6 +22,9 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
     res.send('Backend PAW Project 2024');
 });
+
+app.use("/user", require('./routes/userRoutes'));
+
 app.all('*', handler404);
 app.use(handler500);
 
