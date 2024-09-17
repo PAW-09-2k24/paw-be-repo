@@ -85,4 +85,22 @@ const login = asyncHandler(async (req, res) => {
 
 const logout = asyncHandler(async (req, res) => {});
 
-module.exports = {registerUser, getAllUsers, login, logout};
+const createTask = asyncHandler(async (req, res) => {
+    const {userID, title} = req.body;
+
+    const taskObj = {
+        userID,
+        title,
+        completed: false
+    };
+
+    const task = await User.create(taskObj);
+
+    if (task) {
+        return res.status(201).json({ message: 'Task created!', task});
+    } else {
+        return res.status(400).json({ message: 'Failed to create task!'})
+    }
+});
+
+module.exports = {registerUser, getAllUsers, login, logout, createTask};
