@@ -124,4 +124,4 @@ const createTask = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = {registerUser, getAllUsers, login, logout, createTask};
+module.exports = {registerUser, getAllUsers, login, logout, createTask, createGroup};
