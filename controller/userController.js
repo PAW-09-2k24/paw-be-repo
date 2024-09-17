@@ -86,11 +86,14 @@ const login = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {});
 
 const createTask = asyncHandler(async (req, res) => {
-    const {userID, title} = req.body;
+    const {userID, groupID, title, deadline, description} = req.body;
 
     const taskObj = {
         userID,
+        groupID,
         title,
+        deadline,
+        description,
         completed: false
     };
 
