@@ -2,6 +2,8 @@ const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
 const { json } = require('express');
+const jwt = require('jsonwebtoken');
+
 
 // @desc    Register a new user
 const registerUser = asyncHandler(async (req, res) => {
@@ -63,7 +65,19 @@ const login = asyncHandler(async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
 
     if(match){
-        return res.status(200).json({message: 'Login successful'});
+        const payload = {
+            id: user._id,
+            username: user.username
+        }
+        const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: '1h'});
+        return res.status(200).json({
+            data:{
+                id: user._id,
+                username: user.username,
+            },
+            token : token,
+            message: 'Login successful'
+        });
     } else {
         return res.status(401).json({message: 'Invalid credentials'});
     }
