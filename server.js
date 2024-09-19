@@ -11,6 +11,8 @@ const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/db');
 const PORT = process.env.PORT || 3500;
 const app = express();
+// Import routes baru
+const routes = require('./routes/routes');
 connectDB();
 
 
@@ -22,11 +24,12 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
     res.send('Backend PAW Project 2024');
 });
+// Use the new task routes
+app.use('/tasks', routes); 
 
 app.use("/user", require('./routes/userRoutes'));
 app.use('/update', require('./routes/patchRoutes'));
 app.use("/group", require('./routes/groupRoutes'));
-
 app.all('*', handler404);
 app.use(handler500);
 
