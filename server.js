@@ -24,6 +24,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/user", require('./routes/userRoutes'));
+app.use('/update', require('./routes/patchRoutes'));
 
 app.all('*', handler404);
 app.use(handler500);
