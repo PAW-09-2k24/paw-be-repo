@@ -85,4 +85,43 @@ const login = asyncHandler(async (req, res) => {
 
 const logout = asyncHandler(async (req, res) => {});
 
-module.exports = {registerUser, getAllUsers, login, logout};
+const createGroup = asyncHandler(async (req, res) => {
+    const {userID, groupTitle} = req.body;
+
+    const groupObj = {
+        userID,
+        groupTitle,
+        completed: false
+    };
+
+    const group = await User.create(groupObj);
+
+    if (group) {
+        return res.status(201).json({ message: 'Group created!', group});
+    } else {
+        return res.status(400).json({ message: 'Failed to create group!'})
+    }
+});
+
+const createTask = asyncHandler(async (req, res) => {
+    const {userID, groupID, title, deadline, description} = req.body;
+
+    const taskObj = {
+        userID,
+        groupID,
+        title,
+        deadline,
+        description,
+        completed: false
+    };
+
+    const task = await User.create(taskObj);
+
+    if (task) {
+        return res.status(201).json({ message: 'Task created!', task});
+    } else {
+        return res.status(400).json({ message: 'Failed to create task!'})
+    }
+});
+
+module.exports = {registerUser, getAllUsers, login, logout, createTask, createGroup};
