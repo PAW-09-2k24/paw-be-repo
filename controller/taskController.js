@@ -4,21 +4,30 @@ const User = require('../models/User');
 const Group = require('../models/Group');
 
 const createTask = asyncHandler(async (req, res) => {
-    const {userID, groupID, title, deadline, description} = req.body;
+    const { userID, groupID, title, deadline, description } = req.body;
+
+    // Check if user exists
     try {
         const user = await User.findById(userID).lean().exec();
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
     } catch (error) {
-        return res.status(400).json({ message: 'User not found' });
+        return res.status(500).json({ message: 'Server error while checking user' });
     }
 
-    
+    // Check if group exists
+    let group;
     try {
-        const group = await Group.findById(groupID).lean().exec();
+        group = await Group.findById(groupID).exec(); // Don't use .lean() here, as you'll need to modify the group document
+        if (!group) {
+            return res.status(400).json({ message: 'Group not found' });
+        }
     } catch (error) {
-        
-        return res.status(400).json({ message: 'Group not found' });
+        return res.status(500).json({ message: 'Server error while checking group' });
     }
-    
+
+    // Create task object
     const taskObj = {
         userID,
         groupID,
@@ -28,14 +37,25 @@ const createTask = asyncHandler(async (req, res) => {
         completed: false
     };
 
-    const task = await Task.create(taskObj);
+    // Create task in the database
+    try {
+        const task = await Task.create(taskObj);
+        if (task) {
+            // Append task ID to group's tasks array
+            group.taskID.push(task._id);
 
-    if (task) {
-        return res.status(201).json({ message: 'Task created!', task});
-    } else {
-        return res.status(400).json({ message: 'Failed to create task!'})
+            // Save the updated group
+            await group.save();
+
+            return res.status(201).json({ message: 'Task created!', task });
+        } else {
+            return res.status(400).json({ message: 'Failed to create task!' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error while creating task' });
     }
 });
+
 
 const getTaskAndTaskGroup = async (req, res) => {
     try {
