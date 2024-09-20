@@ -4,6 +4,6 @@ const {deleteGroup, createGroup, updateGroup} = require('../controller/groupCont
 
 router.route('/')
     .post(createGroup)
-    .patch('/:id')
-    .delete('/:id')
+    .patch(updateGroup)
+    .delete(deleteGroup);
 module.exports = router;

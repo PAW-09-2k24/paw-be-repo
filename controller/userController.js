@@ -87,4 +87,4 @@ const logout = asyncHandler(async (req, res) => {});
 
 
 
-module.exports = {registerUser, getAllUsers, login, logout, createGroup};
+module.exports = {registerUser, getAllUsers, login, logout};

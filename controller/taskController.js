@@ -1,4 +1,7 @@
 const asyncHandler = require('express-async-handler');
+const Task = require('../models/Task');
+const User = require('../models/User');
+const Group = require('../models/Group');
 
 const createTask = asyncHandler(async (req, res) => {
     const {userID, groupID, title, deadline, description} = req.body;
@@ -12,7 +15,7 @@ const createTask = asyncHandler(async (req, res) => {
         completed: false
     };
 
-    const task = await User.create(taskObj);
+    const task = await Task.create(taskObj);
 
     if (task) {
         return res.status(201).json({ message: 'Task created!', task});
@@ -38,7 +41,7 @@ const getTaskAndTaskGroup = async (req, res) => {
         }))
 
         // Optionally, fetch TaskGroup if necessary
-        const taskGroups = await TaskGroup.find().lean()
+        const taskGroups = await Group.find().lean()
 
         // Combine tasks and task groups into the response
         res.json({ tasks: tasksWithUser, taskGroups })

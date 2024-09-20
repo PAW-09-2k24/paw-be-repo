@@ -11,8 +11,6 @@ const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/db');
 const PORT = process.env.PORT || 3500;
 const app = express();
-// Import routes baru
-const routes = require('./routes/routes');
 connectDB();
 
 

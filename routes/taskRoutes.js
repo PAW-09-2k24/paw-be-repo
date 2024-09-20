@@ -4,5 +4,7 @@ const {createTask,getTaskAndTaskGroup,deleteTask,updateTask} = require('../contr
 router.route('/')
     .get(getTaskAndTaskGroup)
     .post(createTask)
-    .delete('/:id', deleteTask)
-    .patch('/:id', updateTask)
+    .delete(deleteTask)
+    .patch(updateTask)
+
+module.exports = router;
