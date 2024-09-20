@@ -56,30 +56,60 @@ const createTask = asyncHandler(async (req, res) => {
     }
 });
 
+const getGroup = async (req, res) => {
+    const { groupID } = req.query;
 
-const getTaskAndTaskGroup = async (req, res) => {
+    // Validasi input
+    if (!groupID) {
+        return res.status(400).json({ message: 'Group ID required' });
+    }
+
     try {
-        // Get Task from MongoDB
-        const tasks = await Task.find().lean()  
+        // Cari group berdasarkan ID
+        const group = await Group.findById(groupID).lean().exec();
 
-        // If no Task
-        if (!tasks?.length) {
-            return res.status(400).json({ message: 'No tasks found' })
+        // Jika group tidak ditemukan
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
         }
 
-        // Add username to each task before sending the response
-        const tasksWithUser = await Promise.all(tasks.map(async (task) => {
-            const user = await User.findById(task.user).lean().exec()
-            return { ...task, username: user.username }
-        }))
+        // Ambil semua task berdasarkan ID dari array taskID yang ada di group
+        const tasks = await Task.find({
+            _id: { $in: group.taskID }
+        }).lean().exec();
 
-        // Optionally, fetch TaskGroup if necessary
-        const taskGroups = await Group.find().lean()
+        // Ganti array taskID dengan array informasi detail dari task
+        const { taskID, ...groupWithoutTaskID } = group;
+        const groupWithTasks = {
+            ...groupWithoutTaskID,
+            tasks
+        };
 
-        // Combine tasks and task groups into the response
-        res.json({ tasks: tasksWithUser, taskGroups })
+        res.json({ group: groupWithTasks });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error: error.message })
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+
+const getTask = async(req, res) => {
+    const {taskID} = req.query;
+
+    if(!taskID){
+        return res.status(400).json({message: 'Task ID required'});
+    }
+
+    try {
+        // Cari task berdasarkan ID
+        const task = await Task.findById(taskID).lean().exec();
+
+        // Jika task tidak ditemukan
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+        res.json({ task });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 }
 
@@ -139,4 +169,4 @@ const updateTask = asyncHandler(async (req, res) => {
     res.json(`'${updatedTask.title}' updated`)
 })
 
-module.exports = {createTask, getTaskAndTaskGroup, deleteTask, updateTask};
+module.exports = {createTask, getTask, getGroup, deleteTask, updateTask};
