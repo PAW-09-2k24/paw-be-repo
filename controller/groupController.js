@@ -3,11 +3,11 @@ const Task = require('../models/Task');
 const asyncHandler = require('express-async-handler');
 
 const createGroup = asyncHandler(async (req, res) => {
-  const {userID, groupTitle} = req.body;
+  const {userID, title} = req.body;
 
   const groupObj = {
       userID,
-      groupTitle,
+      title,
       completed: false
   };
 
@@ -46,7 +46,7 @@ const deleteGroup = async (req, res) => {
     const { groupID, title } = req.body
 
     // Confirm data
-    if (!groupID || typeof completed !== 'boolean') {
+    if (!groupID) {
         return res.status(400).json({ message: 'Group ID are required' })
     }
 
