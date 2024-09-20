@@ -1,6 +1,7 @@
 const Group = require('../models/Group');
 const Task = require('../models/Task');
 const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose');
 
 const createGroup = asyncHandler(async (req, res) => {
   const {userID, title} = req.body;
@@ -21,7 +22,10 @@ const createGroup = asyncHandler(async (req, res) => {
 });
 
 const deleteGroup = async (req, res) => {
+  let session;
     try {
+        session = await mongoose.startSession();
+        session.startTransaction();
         const groupId = req.params.id;
     
         // Temukan group
@@ -35,9 +39,11 @@ const deleteGroup = async (req, res) => {
     
         // Hapus group
         await Group.findByIdAndDelete(groupId);
-    
+        
+        await session.commitTransaction();
         res.status(200).json({ message: 'Group and associated tasks deleted successfully' });
       } catch (error) {
+        await session.abortTransaction();
         res.status(500).json({ message: 'Error deleting group', error: error.message });
       }
   };
