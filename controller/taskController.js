@@ -56,30 +56,79 @@ const createTask = asyncHandler(async (req, res) => {
     }
 });
 
+const getUserGroups = async (req, res) => {
+    const { userID } = req.query;
+
+    // Validate input
+    if (!userID) {
+        return res.status(400).json({ message: 'User ID required' });
+    }
+
+    try {
+        // find user by ID
+        const user = await User.findById(userID).lean().exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // find all groups with user id
+        const groups = await Group.find({
+            userID: user._id
+        }).lean().exec();
+
+        // find tasks with group id
+        const groupsWithTasks = await Promise.all(
+            groups.map(async (group) => {
+                const tasks = await Task.find({
+                    _id: { $in: group.taskID }
+                }).lean().exec();
+
+                // append tasks to group
+                return {
+                    ...group,
+                    tasks
+                };
+            })
+        );
+
+        // append group to user
+        const userWithGroups = {
+            ...user,
+            groups: groupsWithTasks
+        };
+
+        res.json({ user: userWithGroups });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 const getGroup = async (req, res) => {
     const { groupID } = req.query;
 
-    // Validasi input
+    // Validate input
     if (!groupID) {
         return res.status(400).json({ message: 'Group ID required' });
     }
 
     try {
-        // Cari group berdasarkan ID
+        // find group by ID
         const group = await Group.findById(groupID).lean().exec();
 
-        // Jika group tidak ditemukan
+        // if not found
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
         }
 
-        // Ambil semua task berdasarkan ID dari array taskID yang ada di group
+        // get all task from group.taskID
         const tasks = await Task.find({
             _id: { $in: group.taskID }
         }).lean().exec();
 
-        // Ganti array taskID dengan array informasi detail dari task
+        //separate taskID from group
         const { taskID, ...groupWithoutTaskID } = group;
+        //append task to group
         const groupWithTasks = {
             ...groupWithoutTaskID,
             tasks
@@ -95,15 +144,16 @@ const getGroup = async (req, res) => {
 const getTask = async(req, res) => {
     const {taskID} = req.query;
 
+    //validate input
     if(!taskID){
         return res.status(400).json({message: 'Task ID required'});
     }
 
     try {
-        // Cari task berdasarkan ID
+        // find task by ID
         const task = await Task.findById(taskID).lean().exec();
 
-        // Jika task tidak ditemukan
+        // if task not found
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
         }
@@ -169,4 +219,4 @@ const updateTask = asyncHandler(async (req, res) => {
     res.json(`'${updatedTask.title}' updated`)
 })
 
-module.exports = {createTask, getTask, getGroup, deleteTask, updateTask};
+module.exports = {createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask};
