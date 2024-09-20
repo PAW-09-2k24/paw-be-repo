@@ -5,7 +5,20 @@ const Group = require('../models/Group');
 
 const createTask = asyncHandler(async (req, res) => {
     const {userID, groupID, title, deadline, description} = req.body;
+    try {
+        const user = await User.findById(userID).lean().exec();
+    } catch (error) {
+        return res.status(400).json({ message: 'User not found' });
+    }
 
+    
+    try {
+        const group = await Group.findById(groupID).lean().exec();
+    } catch (error) {
+        
+        return res.status(400).json({ message: 'Group not found' });
+    }
+    
     const taskObj = {
         userID,
         groupID,

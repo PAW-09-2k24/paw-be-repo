@@ -49,7 +49,8 @@ const deleteGroup = async (req, res) => {
   };
 
   const updateGroup = asyncHandler(async (req, res) => {
-    const { groupID, title } = req.body
+    const {groupID} = req.params
+    const { title } = req.body
 
     // Confirm data
     if (!groupID) {
