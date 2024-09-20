@@ -1,5 +1,24 @@
 const Group = require('../models/Group');
 const Task = require('../models/Task');
+const asyncHandler = require('express-async-handler');
+
+const createGroup = asyncHandler(async (req, res) => {
+  const {userID, groupTitle} = req.body;
+
+  const groupObj = {
+      userID,
+      groupTitle,
+      completed: false
+  };
+
+  const group = await Group.create(groupObj);
+
+  if (group) {
+      return res.status(201).json({ message: 'Group created!', group});
+  } else {
+      return res.status(400).json({ message: 'Failed to create group!'})
+  }
+});
 
 const deleteGroup = async (req, res) => {
     try {
@@ -23,4 +42,27 @@ const deleteGroup = async (req, res) => {
       }
   };
 
-  module.exports = {deleteGroup};
+  const updateGroup = asyncHandler(async (req, res) => {
+    const { groupID, title } = req.body
+
+    // Confirm data
+    if (!groupID || typeof completed !== 'boolean') {
+        return res.status(400).json({ message: 'Group ID are required' })
+    }
+
+    // Confirm note exists to update
+    const group = await Group.findById(groupID).exec()
+
+    if (!group) {
+        return res.status(400).json({ message: 'Group not found' })
+    }
+
+    group.groupID = groupID
+    group.title = title
+
+    const updatedGroup = await group.save()
+
+    res.json(`'${updatedGroup.title}' updated`)
+})
+
+  module.exports = {deleteGroup, createGroup, updateGroup};

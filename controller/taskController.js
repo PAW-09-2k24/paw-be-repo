@@ -1,10 +1,26 @@
-const Task = require('../models/Task') // Pastikan model Task sudah sesuai
-const TaskGroup = require('../models/TaskGroup') // Jika TaskGroup juga ada
-const User = require('../models/User')
+const asyncHandler = require('express-async-handler');
 
-// @desc Get Task and TaskGroup
-// @route GET /task
-// @access Private
+const createTask = asyncHandler(async (req, res) => {
+    const {userID, groupID, title, deadline, description} = req.body;
+
+    const taskObj = {
+        userID,
+        groupID,
+        title,
+        deadline,
+        description,
+        completed: false
+    };
+
+    const task = await User.create(taskObj);
+
+    if (task) {
+        return res.status(201).json({ message: 'Task created!', task});
+    } else {
+        return res.status(400).json({ message: 'Failed to create task!'})
+    }
+});
+
 const getTaskAndTaskGroup = async (req, res) => {
     try {
         // Get Task from MongoDB
@@ -60,7 +76,31 @@ const deleteTask = async (req, res) => {
     }
 }
 
-module.exports = {
-    getTaskAndTaskGroup,
-    deleteTask
-}
+const updateTask = asyncHandler(async (req, res) => {
+    const { taskID, userID, title, deadline, status, description } = req.body
+
+    // Confirm data
+    if (!taskID || typeof completed !== 'boolean') {
+        return res.status(400).json({ message: 'Task ID are required' })
+    }
+
+    // Confirm note exists to update
+    const task = await Task.findById(taskID).exec()
+
+    if (!task) {
+        return res.status(400).json({ message: 'Task not found' })
+    }
+
+    task.taskID = taskID
+    task.userID = userID
+    task.title = title
+    task.deadline = deadline
+    task.status = status
+    task.description = description
+
+    const updatedTask = await task.save()
+
+    res.json(`'${updatedTask.title}' updated`)
+})
+
+module.exports = {createTask, getTaskAndTaskGroup, deleteTask, updateTask};
