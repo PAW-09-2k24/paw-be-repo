@@ -66,7 +66,7 @@ const getUserGroups = async (req, res) => {
 
     try {
         // find user by ID
-        const user = await User.findById(userID).lean().exec();
+        const user = await User.findById(userID).select("-password -__v").lean().exec();
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -75,14 +75,14 @@ const getUserGroups = async (req, res) => {
         // find all groups with user id
         const groups = await Group.find({
             userID: user._id
-        }).lean().exec();
+        }).select("-__v").lean().exec();
 
         // find tasks with group id
         const groupsWithTasks = await Promise.all(
             groups.map(async (group) => {
                 const tasks = await Task.find({
                     _id: { $in: group.taskID }
-                }).lean().exec();
+                }).select("-__v").lean().exec();
 
                 // append tasks to group
                 return {
@@ -98,7 +98,7 @@ const getUserGroups = async (req, res) => {
             groups: groupsWithTasks
         };
 
-        res.json({ user: userWithGroups });
+        res.status(200).json({ data: userWithGroups, message: 'Success get group&task'} );
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }

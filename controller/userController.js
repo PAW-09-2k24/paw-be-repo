@@ -69,7 +69,8 @@ const login = asyncHandler(async (req, res) => {
             id: user._id,
             username: user.username
         }
-        const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: '1h'});
+        const expiresIn = 60*60*24;
+        const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: expiresIn});
         return res.status(200).json({
             data:{
                 id: user._id,
