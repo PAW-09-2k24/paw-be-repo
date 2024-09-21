@@ -104,6 +104,58 @@ const getUserGroups = async (req, res) => {
     }
 };
 
+const countUserGroups = async (req, res) => {
+    const { userID } = req.query;
+
+    // Validate input
+    if (!userID) {
+        return res.status(400).json({ message: 'User ID required' });
+    }
+
+    try {
+        // find user by ID
+        const user = await User.findById(userID).lean().exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // find all groups with user id
+        const groups = await Group.find({
+            userID: user._id
+        }).lean().exec();
+
+        let taskCount = 0;
+        let completedCount = 0;
+        let uncompletedCount = 0;
+
+        // find and count tasks for each group
+        await Promise.all(
+            groups.map(async (group) => {
+                const tasks = await Task.find({
+                    _id: { $in: group.taskID }
+                }).lean().exec();
+
+                taskCount += tasks.length;
+                completedCount += tasks.filter(task => task.status === 'completed').length;
+                uncompletedCount += tasks.filter(task => task.status === 'uncompleted').length;
+            })
+        );
+
+        // Prepare the response object
+        const response = {
+            groupCount: groups.length,
+            taskCount,
+            completedCount,
+            uncompletedCount
+        };
+
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 const getGroup = async (req, res) => {
     const { groupID } = req.query;
 
@@ -219,4 +271,4 @@ const updateTask = asyncHandler(async (req, res) => {
     res.json(`'${updatedTask.title}' updated`)
 })
 
-module.exports = {createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask};
+module.exports = {createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask, countUserGroups};
