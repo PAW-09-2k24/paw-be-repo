@@ -5,7 +5,6 @@ const handler404 = require('./middleware/404handler');
 const handler500 = require('./middleware/500handler');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const {logger, logEvents} = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/db');
@@ -13,17 +12,31 @@ const PORT = process.env.PORT || 3500;
 const app = express();
 connectDB();
 
+switch (process.env.NODE_ENV) {
+  case "development":
+    const { logger, logEvents } = require('./middleware/logger');
+    app.use(logger);
+    mongoose.connection.on("error", (err) => {
+      console.log(err);
+      logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
+        'mongoErrLog.log');
+    });
+    break;
+  case "production":
+    break;
+  default:
+    break;
+}
 
-app.use(logger);
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
-    res.send('Backend PAW Project 2024');
+  res.send('Backend PAW Project 2024');
 });
 // Use the new task routes
-app.use('/task', require('./routes/taskRoutes')); 
+app.use('/task', require('./routes/taskRoutes'));
 app.use("/user", require('./routes/userRoutes'));
 app.use("/group", require('./routes/groupRoutes'));
 app.all('*', handler404);
@@ -42,11 +55,6 @@ mongoose.connection.once("open", () => {
   });
 });
 
-mongoose.connection.on("error", (err) => {
-  console.log(err);
-  logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
-  'mongoErrLog.log');
-});
 
 app.use(errorHandler);
 
