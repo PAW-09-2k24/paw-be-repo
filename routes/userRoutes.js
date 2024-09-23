@@ -9,7 +9,7 @@ router.route('/')
 
 router.get('/groups',  verifyToken , getUserGroups);
 
-router.get('/groupCount',  countUserGroups);
+router.get('/groupCount',  verifyToken,countUserGroups);
 
 router.post('/login', login);
 

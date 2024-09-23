@@ -75,14 +75,14 @@ const getUserGroups = async (req, res) => {
         // find all groups with user id
         const groups = await Group.find({
             userID: user._id
-        }).select("-__v").lean().exec();
+        }).select("-__v -userID").lean().exec();
 
         // find tasks with group id
         const groupsWithTasks = await Promise.all(
             groups.map(async (group) => {
                 const tasks = await Task.find({
                     _id: { $in: group.taskID }
-                }).select("-__v").lean().exec();
+                }).select("-__v -userID").lean().exec();
 
                 // append tasks to group
                 return {
@@ -93,12 +93,12 @@ const getUserGroups = async (req, res) => {
         );
 
         // append group to user
-        const userWithGroups = {
-            ...user,
-            groups: groupsWithTasks
-        };
+        // const userWithGroups = {
+        //     ...user,
+        //     groupsWithTasks
+        // };
 
-        res.status(200).json({ data: userWithGroups, message: 'Success get group&task'} );
+        res.status(200).json({ data: groupsWithTasks, message: 'Success get group&task'} );
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
