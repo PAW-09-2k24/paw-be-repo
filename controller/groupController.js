@@ -4,20 +4,24 @@ const asyncHandler = require('express-async-handler');
 const mongoose = require('mongoose');
 
 const createGroup = asyncHandler(async (req, res) => {
-    const { userID, title } = req.body;
-
-    const groupObj = {
-        userID,
-        title,
-        completed: false
-    };
-
-    const group = await Group.create(groupObj);
-
-    if (group) {
-        return res.status(201).json({ message: 'Group created!', group });
-    } else {
-        return res.status(400).json({ message: 'Failed to create group!' })
+    try {
+        const { userID, title } = req.body;
+    
+        const groupObj = {
+            userID,
+            title,
+            completed: false
+        };
+    
+        const group = await Group.create(groupObj);
+    
+        if (group) {
+            return res.status(201).json({ message: 'Group created!', group });
+        } else {
+            return res.status(400).json({ message: 'Failed to create group!' })
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message })
     }
 });
 
