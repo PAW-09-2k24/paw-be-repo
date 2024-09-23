@@ -1,7 +1,7 @@
 const allowedOrigins =
   process.env.NODE_ENV === "development"
     ? ["http://localhost:3000", undefined] // undefined allows Postman and anonymous access
-    : [process.env.CLIENT_ORIGIN, undefined];
+    : [process.env.CLIENT_ORIGIN, "https://paw-09.vercel.app/"];
 
 const corsOptions = {
   origin: (origin, callback) => {

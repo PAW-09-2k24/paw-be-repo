@@ -11,7 +11,7 @@
         "src": "/.*",
         "dest": "server.js",
         "headers": {
-          "Access-Control-Allow-Origin": "https://teknisiade.site"
+          "Access-Control-Allow-Origin": "https://paw-09.vercel.app/"
         }
       }
     ]
