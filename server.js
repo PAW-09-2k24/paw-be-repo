@@ -16,25 +16,20 @@ switch (process.env.NODE_ENV) {
   case "development":
     const { logger, logEvents } = require('./middleware/logger');
     app.use(logger);
-    mongoose.connection.on("error", (err) => {
-      console.log(err);
-      logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
-        'mongoErrLog.log');
-    });
     break;
-  case "production":
-    break;
-  default:
-    break;
-}
-
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(cookieParser());
-
-app.get('/', (req, res) => {
-  res.send('Backend PAW Project 2024');
-});
+    case "production":
+      break;
+      default:
+        break;
+      }
+      
+      app.use(cors(corsOptions));
+      app.use(express.json());
+      app.use(cookieParser());
+      
+      app.get('/', (req, res) => {
+        res.send('Backend PAW Project 2024');
+      });
 // Use the new task routes
 app.use('/task', require('./routes/taskRoutes'));
 app.use("/user", require('./routes/userRoutes'));
@@ -43,18 +38,24 @@ app.all('*', handler404);
 app.use(handler500);
 
 // app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);   
-// });
-
-let server;
-mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  server = app.listen(PORT, () => {
-    console.log(`Server is running on PORT: ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV}`);
+  //     console.log(`Server is running on port ${PORT}`);   
+  // });
+  
+  let server;
+  mongoose.connection.once("open", () => {
+    console.log("Connected to MongoDB");
+    server = app.listen(PORT, () => {
+      console.log(`Server is running on PORT: ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
+    });
   });
-});
-
-
-app.use(errorHandler);
-
+  
+  mongoose.connection.on("error", (err) => {
+    console.log(err);
+    logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
+      'mongoErrLog.log');
+  });
+  
+  // app.use(errorHandler);
+  
+  
