@@ -5,12 +5,12 @@ const mongoose = require('mongoose');
 
 const createGroup = asyncHandler(async (req, res) => {
     try {
-        const { userID, title } = req.body;
+        const {userID} = req.query;
+        const { title } = req.body;
     
         const groupObj = {
             userID,
             title,
-            completed: false
         };
     
         const group = await Group.create(groupObj);
@@ -90,7 +90,7 @@ const updateGroup = asyncHandler(async (req, res) => {
 
         const updatedGroup = await group.save()
 
-        res.status(200).json(`'${updatedGroup.title}' updated`)
+        res.status(200).json(`Group updated`)
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message })
 

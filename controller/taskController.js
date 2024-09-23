@@ -4,17 +4,18 @@ const User = require('../models/User');
 const Group = require('../models/Group');
 
 const createTask = asyncHandler(async (req, res) => {
-    const { userID, groupID, title, deadline, description } = req.body;
+    const { groupID } = req.query;
+    const { title, deadline, description } = req.body;
 
     // Check if user exists
-    try {
-        const user = await User.findById(userID).lean().exec();
-        if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: 'Server error while checking user' });
-    }
+    // try {
+    //     const user = await User.findById(userID).lean().exec();
+    //     if (!user) {
+    //         return res.status(400).json({ message: 'User not found' });
+    //     }
+    // } catch (error) {
+    //     return res.status(500).json({ message: 'Server error while checking user' });
+    // }
 
     // Check if group exists
     let group;
@@ -28,13 +29,14 @@ const createTask = asyncHandler(async (req, res) => {
     }
 
     // Create task object
+    const userID = group.userID;
     const taskObj = {
         userID,
         groupID,
         title,
         deadline,
         description,
-        completed: false
+        
     };
 
     // Create task in the database
@@ -219,16 +221,16 @@ const getTask = async (req, res) => {
 // @route DELETE /task
 // @access Private
 const deleteTask = async (req, res) => {
-    const { id } = req.body
+    const { taskID } = req.query
 
     // Confirm data
-    if (!id) {
+    if (!taskID) {
         return res.status(400).json({ message: 'Task ID required' })
     }
 
     try {
         // Confirm Task exists to delete
-        const task = await Task.findById(id).exec()
+        const task = await Task.findById(taskID).exec()
 
         if (!task) {
             return res.status(400).json({ message: 'Task not found' })
