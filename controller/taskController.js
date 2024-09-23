@@ -245,7 +245,8 @@ const deleteTask = async (req, res) => {
 }
 
 const updateTask = asyncHandler(async (req, res) => {
-    const { taskID, title, deadline, status, description } = req.body
+    const { taskID } = req.query
+    const { title, deadline, status, description } = req.body
 
     try {
         // Confirm data
