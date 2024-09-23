@@ -152,7 +152,7 @@ const countUserGroups = async (req, res) => {
             uncompletedCount
         };
 
-        res.json(response);
+        res.status(200).json({data: response, message: 'Success get group count'});
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
