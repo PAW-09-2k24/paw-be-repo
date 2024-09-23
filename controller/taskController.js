@@ -98,7 +98,7 @@ const getUserGroups = async (req, res) => {
         //     groupsWithTasks
         // };
 
-        res.status(200).json({ data: groupsWithTasks, message: 'Success get group&task'} );
+        res.status(200).json({ data: groupsWithTasks, message: 'Success get group&task' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
@@ -193,12 +193,12 @@ const getGroup = async (req, res) => {
 };
 
 
-const getTask = async(req, res) => {
-    const {taskID} = req.query;
+const getTask = async (req, res) => {
+    const { taskID } = req.query;
 
     //validate input
-    if(!taskID){
-        return res.status(400).json({message: 'Task ID required'});
+    if (!taskID) {
+        return res.status(400).json({ message: 'Task ID required' });
     }
 
     try {
@@ -245,30 +245,38 @@ const deleteTask = async (req, res) => {
 }
 
 const updateTask = asyncHandler(async (req, res) => {
-    const { taskID, userID, title, deadline, status, description } = req.body
+    const { taskID, title, deadline, status, description } = req.body
 
-    // Confirm data
-    if (!taskID || typeof completed !== 'boolean') {
-        return res.status(400).json({ message: 'Task ID are required' })
+    try {
+        // Confirm data
+        if (!taskID) {
+            return res.status(400).json({ message: 'Task ID are required' })
+        }
+
+        // Confirm note exists to update
+        // const task = await Task.findById(taskID).exec()
+        if (['uncompleted', 'completed'].includes(status)) {
+            try {
+                const taskUpdated = await Task.findByIdAndUpdate(taskID, { title, deadline, status, description }, { new: true });
+                return res.status(200).json({data:taskUpdated,message:`'${taskUpdated.title}' updated`})
+            } catch (error) {
+                return res.status(500).json({ message: `Error updating status error:${error}` })
+            }
+        }
+        return res.status(400).json({ message: 'Invalid status' })
+        // task.taskID = taskID
+        // task.title = title
+        // task.deadline = deadline
+        // task.status = status
+        // task.description = description
+
+        // const updatedTask = await task.save()
+
+        // res.json(`'${updatedTask.title}' updated`)
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message })
     }
 
-    // Confirm note exists to update
-    const task = await Task.findById(taskID).exec()
-
-    if (!task) {
-        return res.status(400).json({ message: 'Task not found' })
-    }
-
-    task.taskID = taskID
-    task.userID = userID
-    task.title = title
-    task.deadline = deadline
-    task.status = status
-    task.description = description
-
-    const updatedTask = await task.save()
-
-    res.json(`'${updatedTask.title}' updated`)
 })
 
-module.exports = {createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask, countUserGroups};
+module.exports = { createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask, countUserGroups };
