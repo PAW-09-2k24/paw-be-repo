@@ -56,6 +56,6 @@ app.use(handler500);
       'mongoErrLog.log');
   });
   
-  // app.use(errorHandler);
+  app.use(errorHandler);
   
   
