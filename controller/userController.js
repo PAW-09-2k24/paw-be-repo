@@ -71,7 +71,7 @@ const login = asyncHandler(async (req, res) => {
         }
         const expiresIn = 60*60*1;
         const token = jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: expiresIn});
-        res.cookie('token', token, {httpOnly: true, maxAge: expiresIn*1000, secure: true, sameSite: 'lax'});
+        res.cookie('token', token, {httpOnly: true, maxAge: expiresIn*1000, secure: true, sameSite: 'none'});
         return res.status(200).json({
             data:{
                 id: user._id,
