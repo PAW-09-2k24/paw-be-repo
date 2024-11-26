@@ -3,11 +3,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const handler404 = require('./middleware/404handler');
 const handler500 = require('./middleware/500handler');
+const sessionMiddleware = require('./middleware/expressSession');
+const session = require("express-session");
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const errorHandler = require('./middleware/errorHandler');
 const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/db');
+const passport = require('./config/google-strategy');
 const PORT = process.env.PORT || 3500;
 const app = express();
 connectDB();
@@ -31,6 +34,10 @@ switch (process.env.NODE_ENV) {
         res.send('Backend PAW Project 2024');
       });
 // Use the new task routes
+sessionMiddleware(app);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use("/auth", require('./routes/googleRoutes'));
 app.use('/task', require('./routes/taskRoutes'));
 app.use("/user", require('./routes/userRoutes'));
 app.use("/group", require('./routes/groupRoutes'));
