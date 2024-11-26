@@ -2,6 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User'); // Import model User
 const bcrypt = require('bcrypt');
+require("dotenv").config();
 
 // Konfigurasi Google OAuth2
 passport.use(
@@ -9,7 +10,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: '/auth/google/callback',
+      callbackURL: 'http://localhost:3500/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -29,7 +30,6 @@ passport.use(
           user = await User.create({
             username: profile._json.email.split('@')[0],
             password: hashedPassword,
-            is_verified: true,
           });
         }
 
