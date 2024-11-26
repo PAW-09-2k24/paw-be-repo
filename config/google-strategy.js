@@ -1,60 +1,64 @@
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/User'); // Import model User
-const bcrypt = require('bcrypt');
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const User = require("../models/User"); // Model User
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-// Konfigurasi Google OAuth2
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3500/auth/google/callback',
+      callbackURL: "http://localhost:3500/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Cari user berdasarkan email dari profil Google
-        let user = await User.findOne({ username: profile._json.email }).exec();
+        // Ambil email dari profil Google
+        const email = profile._json.email;
 
-        // Jika user tidak ditemukan, buat user baru
+        // Cari user di database
+        let user = await User.findOne({ username: email }).exec();
+
         if (!user) {
-          const lastSixDigitsID = profile.id.slice(-6);
-          const lastTwoDigitsName = profile._json.name.slice(-2);
-          const newPassword = lastTwoDigitsName + lastSixDigitsID;
-
-          // Hash password baru
-          const salt = await bcrypt.genSalt(10);
-          const hashedPassword = await bcrypt.hash(newPassword, salt);
-
+          // Jika user belum ada, buat user baru
           user = await User.create({
-            username: profile._json.email.split('@')[0],
-            password: hashedPassword,
+            username: email,
+            password: "google-auth", // Password default
           });
+          console.log("User baru berhasil dibuat:", user);
+        } else {
+          console.log("User sudah ada:", user);
         }
 
-        // Lanjutkan proses login
+        // Generate JWT token
+        const payload = {
+          id: user._id,
+          username: user.username,
+        };
+        const token = jwt.sign(payload, process.env.SECRET_KEY, {
+          expiresIn: "1h", // Token berlaku selama 1 jam
+        });
+
+        // Tambahkan token ke objek user
+        user.token = token;
+
         return done(null, user);
       } catch (error) {
-        console.error(error);
+        console.error("Error dalam GoogleStrategy:", error.message);
         return done(error, null);
       }
     }
   )
 );
 
-// Serialize dan deserialize user
+// Serialize user untuk session
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user);
 });
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id).exec();
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
+// Deserialize user dari session
+passport.deserializeUser((user, done) => {
+  done(null, user);
 });
 
 module.exports = passport;
