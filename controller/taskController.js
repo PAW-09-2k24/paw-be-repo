@@ -217,6 +217,44 @@ const getTask = async (req, res) => {
     }
 }
 
+const getAllTasks = async (req, res) => {
+    const{userID} = req.query;
+    if (!userID) {
+        return res.status(400).json({ message: 'User ID required' });
+    }
+
+    try {
+        // find user by ID
+        const user = await User.findById(userID).select("-password -__v").lean().exec();
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // find all groups with user id
+        const groups = await Group.find({
+            userID: user._id
+        }).select("-__v -userID").lean().exec();
+
+        // find tasks with group id
+        const allTasks = await Promise.all(
+            groups.map(async (group) => {
+                const tasks = await Task.find({
+                    _id: { $in: group.taskID }
+                }).select("-__v -userID").lean().exec();
+
+                return tasks;
+            })
+        );
+
+        const flattenTasks = allTasks.flat()
+        
+        res.status(200).json({ data: flattenTasks, message: 'Success get all tasks' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+}
+
 // @desc Delete a Task
 // @route DELETE /task
 // @access Private
@@ -282,4 +320,4 @@ const updateTask = asyncHandler(async (req, res) => {
 
 })
 
-module.exports = { createTask, getUserGroups, getTask, getGroup, deleteTask, updateTask, countUserGroups };
+module.exports = { createTask, getUserGroups, getTask, getGroup, getAllTasks, deleteTask, updateTask, countUserGroups };
