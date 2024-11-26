@@ -27,7 +27,7 @@ router.get(
       });
 
       // Redirect ke dashboard frontend
-      res.redirect("http://localhost:3000/to-do");
+      res.redirect(`${process.env.FE_URL}/to-do`);
     } catch (error) {
       console.error("Error dalam Google callback:", error.message);
       res.redirect("/login");
